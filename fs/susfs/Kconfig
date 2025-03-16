@@ -1,0 +1,6 @@
+# Kconfig 完整内容
+config SUSFS
+    tristate "SUSFS filesystem support"
+    depends on BLOCK
+    help
+      This is SUSFS - Simple Userspace Filesystem
