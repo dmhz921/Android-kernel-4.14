@@ -20,7 +20,6 @@
  *  Added devfs support: Richard Gooch <rgooch@atnf.csiro.au>, 13-JAN-1998
  *  Heavily rewritten for 'one fs - one tree' dcache architecture. AV, Mar 2000
  */
-
 #include <linux/export.h>
 #include <linux/slab.h>
 #include <linux/blkdev.h>
@@ -36,7 +35,16 @@
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>
 #include "internal.h"
+#include <linux/module.h>
+#include <linux/fs.h>
 
+static struct file_system_type susfs_type = {
+    .owner = THIS_MODULE,
+    .name = "susfs",
+    .mount = susfs_mount,
+    .kill_sb = kill_block_super,
+    .fs_flags = FS_REQUIRES_DEV,
+};
 
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
