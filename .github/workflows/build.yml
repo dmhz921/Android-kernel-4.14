@@ -1,34 +1,39 @@
-name: Android Kernel Builder
+name: SUSFS Kernel Builder
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+      with:
+        submodules: recursive
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu xz-utils flex bison libssl-dev
-        
-    - name: Configure kernel
+
+    - name: Generate config
       run: |
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
         echo "CONFIG_SUSFS=y" >> .config
-        yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
-        
+        yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+
     - name: Build kernel
       run: |
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
-        
-    - name: Upload kernel image
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: kernel-image
-        path: arch/arm64/boot/Image.gz-dtb
+        path: |
+          arch/arm64/boot/Image.gz-dtb
+          .config
